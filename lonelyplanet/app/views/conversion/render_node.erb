@@ -38,40 +38,5 @@
 		end
 		%>	
 	<% end %>
-
-	
-	<% if element.text? %>
-		<% text = element.child %>
-		<%= element.content %>
-	<% end %>
-	
-	
 	</br>
 <% end %>
-
- <!--
-<% @node.each_child do |child| %>
-
-	<%= child.name %></br>
-<% end %>
-<%= debug @doc %>
-</br>
-<%= debug @nodes %>
-</br>
-<%= debug @node %>
-</br>
-<%= debug @node_context %>
- </br>
-<%= debug @parent_node %>
- </br>
-<%= debug @path %>
- </br>
-
-<% 
-@attributes.each do |attribute|
-%>	
-	Attribute: <%=attribute.name%>=<%=attribute.value%></br>
-<% 
-end
-%>
--->

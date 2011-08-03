@@ -20,14 +20,14 @@ class ConversionController < ApplicationController
     #@node = @doc.root.node_type_name () 
     #@node_context = @node.context(namespaces=nil)
     
-    @node = @doc.find_first('//node[@atlas_node_id=355064]')
+    @node = @doc.find_first('//node[@atlas_node_id=355611]')
     @attributes = @node.attributes
     @atlas_node_id = @attributes.get_attribute('atlas_node_id')
     if @atlas_node_id == nil
       @atlas_node_id = @attributes.get_attribute('geo_id')    
     end
     
-    @overview = @destinations.find_first('//destination[@atlas_id=355064]/introductory/introduction/overview')
+    @overview = @destinations.find_first('//destination[@atlas_id=355611]/introductory/introduction/overview')
     
     @node.each_element do |element|
       node_type = element.node_type_name
@@ -38,11 +38,86 @@ class ConversionController < ApplicationController
       end
     end
     @parent_node = @node.parent
-   
+    parent_node_attributes = @parent_node.attributes
+    @parent_atlas_node_id = parent_node_attributes.get_attribute('atlas_node_id')
+    if @parent_atlas_node_id == nil
+      @parent_atlas_node_id = parent_node_attributes.get_attribute('geo_id')    
+    end
     @path = @node.path
     
     
     
+  end
+  def render_node
+    if !node_id = params[:id]
+      node_id = '355064'
+    end
+    parser = XML::Parser.file('public/input/taxonomy.xml')
+    @doc = parser.parse
+    parser = XML::Parser.file('public/input/destinations.xml')
+    @destinations = parser.parse
+    
+    #speed up XPath computation on static documents.
+    @doc.order_elements! 
+    @destinations.order_elements! 
+    
+    @node = @doc.find_first("//node[@atlas_node_id=#{node_id}]")
+    @attributes = @node.attributes
+    @atlas_node_id = @attributes.get_attribute('atlas_node_id')
+    if @atlas_node_id == nil
+      @atlas_node_id = @attributes.get_attribute('geo_id')    
+    end
+    
+    @overview = @destinations.find_first("//destination[@atlas_id=#{node_id}]/introductory/introduction/overview")
+    
+    @parent_node = @node.parent
+    parent_node_attributes = @parent_node.attributes
+    @parent_atlas_node_id = parent_node_attributes.get_attribute('atlas_node_id')
+    if @parent_atlas_node_id == nil
+      @parent_atlas_node_id = parent_node_attributes.get_attribute('geo_id')    
+    end
+  end
+  
+  def render_destination
+    if !node_id = params[:id]
+      node_id = '355064'
+    end
+    parser = XML::Parser.file('public/input/taxonomy.xml')
+    @doc = parser.parse
+    parser = XML::Parser.file('public/input/destinations.xml')
+    @destinations = parser.parse
+    
+    #speed up XPath computation on static documents.
+    @doc.order_elements! 
+    @destinations.order_elements! 
+    
+    @node = @doc.find_first("//node[@atlas_node_id=#{node_id}]")
+    @attributes = @node.attributes
+    @atlas_node_id = @attributes.get_attribute('atlas_node_id')
+    if @atlas_node_id == nil
+      @atlas_node_id = @attributes.get_attribute('geo_id')    
+    end
+    
+    #get destination text
+    @node.each_child do |element|
+    	if element.name == 'node_name'  	
+    		@node_name = element.content
+    	elsif element.name == 'node'
+    	  @has_related_destinations = true 
+    	end
+    end
+    if !@node_name 
+      @node_name = "Text not found"
+    end
+    
+    @overview = @destinations.find_first("//destination[@atlas_id=#{node_id}]/introductory/introduction/overview")
+    
+    @parent_node = @node.parent
+    parent_node_attributes = @parent_node.attributes
+    @parent_atlas_node_id = parent_node_attributes.get_attribute('atlas_node_id')
+    if @parent_atlas_node_id == nil
+      @parent_atlas_node_id = parent_node_attributes.get_attribute('geo_id')    
+    end
   end
   
   def test
