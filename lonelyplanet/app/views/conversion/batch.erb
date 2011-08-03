@@ -8,13 +8,10 @@
      <h3>Navigation</h3>
      <div class="content">
        <div class="inner">
+		 <!-- create link to parent destination if existing -->
          <% if @parent_node.name == 'node' %>
 			<b>Go to: </b>
-			<% @parent_node.each_child do |element| %>
-				<% if element.name == 'node_name' %>
-					<b><%= link_to element.content, :controller => "conversion", :action => "render_destination", :id => @parent_atlas_node_id.value %></b>
-				<% end %>
-			<% end %>
+			<b><a href="http://localhost:3000/output/<%=@parent_atlas_node_id.value%>-<%=@parent_node_name%>"><%= @parent_node_name %></a></b>
 		<% end %>
 			<!-- create link list of related destinations -->	
 			<% first_time = true %>
@@ -31,7 +28,7 @@
 					    	<% if atlas_node_id2 == nil %>
 					      		<% atlas_node_id2 = attributes2.get_attribute('geo_id') %>    
 					    	<% end %>
-							<b><%= link_to element2.content, :controller => "conversion", :action => "render_destination", :id => atlas_node_id2.value %></b>
+							<b><a href="http://localhost:3000/output/<%=atlas_node_id2.value%>-<%=element2.content%>"><%= element2.content %></a></b>
 						<% end %>
 					<% end %>
 				<% end %>
@@ -46,7 +43,7 @@
    <div class="block">
      <div class="secondary-navigation">
        <ul>
-         <li class="first"><%= link_to @node_name, :controller => "conversion", :action => "render_destination", :id => @atlas_node_id.value %></li>
+         <li class="first"><a href="http://localhost:3000/output/<%=@atlas_node_id.value%>-<%=@node_name%>"><%= @node_name %></a></li>
        </ul>
        <div class="clear"></div>
      </div>
