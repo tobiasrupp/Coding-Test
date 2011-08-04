@@ -1,17 +1,7 @@
 desc "Generates hmtl pages from destination source files"
-task :testo => :environment do
-  destinations_path = ENV["DEST_PATH"]
-  taxonomy_path = ENV["TAX_PATH"]
-  output_folder_path = ENV["OUT_PATH"]
-
-  puts destinations_path
-  puts taxonomy_path
-  puts output_folder_path
-end
-
-desc "Generates hmtl pages from destination source files"
 task :convert => :environment do
     require 'xml'
+    start_time = Time.now
     
     #check optional parameters
     destinations_path = ENV["DEST_PATH"]
@@ -59,7 +49,6 @@ task :convert => :environment do
     parser = XML::Parser.file(destinations_path)
     @destinations = parser.parse
   rescue => exc
-    #puts "Error parsing source file ('#{exc.message}')."
     exit
   end
   
@@ -67,7 +56,7 @@ task :convert => :environment do
   @doc.order_elements! 
   @destinations.order_elements! 
   
-  #get all destination elements
+  #read all destination elements
   @all_nodes = @doc.find("//node")
   first_time = true
   file_count = 0
@@ -93,7 +82,7 @@ task :convert => :environment do
       @node_name = "Text not found"
     end
     
-    #get overview text of destination
+    #get destination overview text
     overview_element = @destinations.find_first("//destination[@atlas_id=#{@atlas_node_id.value}]/introductory/introduction/overview")
     @overview = overview_element.content
     if !@overview
@@ -146,7 +135,10 @@ task :convert => :environment do
   end
   @logger.info("#{get_time_stamp} - Batch completed. #{file_count} files created")
   @logger.info("")
-  puts "Conversion completed. #{file_count} files created. Log: #{output_folder_path}_batch.log"
+  end_time = Time.now
+  job_duration = end_time - start_time 
+  puts "Conversion completed. #{file_count} files created, log: #{output_folder_path}_batch.log"
+  puts "Duration: #{job_duration}"
 end
 
 def get_time_stamp
