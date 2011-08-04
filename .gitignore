@@ -1,11 +1,7 @@
 lonelyplanet/config/database.yml
 lonelyplanet/tmp/*
 lonelyplanet/log/*
-<<<<<<< HEAD
 lonelyplanet/public/input/destinations.xml
 lonelyplanet/public/input/taxonomy.xml
-lonelyplanet/public/output/*.html
-=======
 lonelyplanet/public/input/*
 lonelyplanet/public/output/*
->>>>>>> develop
