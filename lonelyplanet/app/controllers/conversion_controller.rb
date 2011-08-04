@@ -1,88 +1,47 @@
 class ConversionController < ApplicationController
-    require 'rexml/document'
-    include REXML
-    
     require 'xml'
     
   #... add some security
   
-  def libxml
-  
-    parser = XML::Parser.file('public/input/taxonomy.xml')
-    @doc = parser.parse
-    parser = XML::Parser.file('public/input/destinations.xml')
-    @destinations = parser.parse
-    
-    #speed up XPath computation on static documents.
-    @doc.order_elements! 
-    @destinations.order_elements! 
-    #@nodes = @doc.find_first('//node')
-    #@node = @doc.root.node_type_name () 
-    #@node_context = @node.context(namespaces=nil)
-    
-    @node = @doc.find_first('//node[@atlas_node_id=355611]')
-    @attributes = @node.attributes
-    @atlas_node_id = @attributes.get_attribute('atlas_node_id')
-    if @atlas_node_id == nil
-      @atlas_node_id = @attributes.get_attribute('geo_id')    
-    end
-    
-    @overview = @destinations.find_first('//destination[@atlas_id=355611]/introductory/introduction/overview')
-    
-    @node.each_element do |element|
-      node_type = element.node_type_name
-      if node_type !='node_name'
-        #@node_text = element.content
-      else
-        
-      end
-    end
-    @parent_node = @node.parent
-    parent_node_attributes = @parent_node.attributes
-    @parent_atlas_node_id = parent_node_attributes.get_attribute('atlas_node_id')
-    if @parent_atlas_node_id == nil
-      @parent_atlas_node_id = parent_node_attributes.get_attribute('geo_id')    
-    end
-    @path = @node.path
-    
-    
-    
-  end
-  def render_node
-    if !node_id = params[:id]
-      node_id = '355064'
-    end
-    parser = XML::Parser.file('public/input/taxonomy.xml')
-    @doc = parser.parse
-    parser = XML::Parser.file('public/input/destinations.xml')
-    @destinations = parser.parse
-    
-    #speed up XPath computation on static documents
-    @doc.order_elements! 
-    @destinations.order_elements! 
-    
-    @node = @doc.find_first("//node[@atlas_node_id=#{node_id}]")
-    @attributes = @node.attributes
-    @atlas_node_id = @attributes.get_attribute('atlas_node_id')
-    if @atlas_node_id == nil
-      @atlas_node_id = @attributes.get_attribute('geo_id')    
-    end
-    
-    @overview = @destinations.find_first("//destination[@atlas_id=#{node_id}]/introductory/introduction/overview")
-    
-    @parent_node = @node.parent
-    parent_node_attributes = @parent_node.attributes
-    @parent_atlas_node_id = parent_node_attributes.get_attribute('atlas_node_id')
-    if @parent_atlas_node_id == nil
-      @parent_atlas_node_id = parent_node_attributes.get_attribute('geo_id')    
-    end
-  end
-  
   def batch
+    #check optional parameters
+    if params[:destinations_path]
+      destinations_path = params[:destinations_path]
+      if !File.exists?(destinations_path) || File.directory?(destinations_path)
+        render :text => "File #{destinations_path} does not exist."
+        return
+      end
+    else  
+      destinations_path = 'public/input/destinations.xml'
+    end
+    if params[:taxonomy_path]
+      taxonomy_path = params[:taxonomy_path]
+      if !File.exists?(taxonomy_path) || File.directory?(taxonomy_path)
+        render :text => "File '#{taxonomy_path}' does not exist."
+        return
+      end
+    else
+      taxonomy_path = 'public/input/taxonomy.xml'
+    end
+    if params[:output_folder_path]
+      @output_folder_path = params[:output_folder_path]
+      if !File.exists?(@output_folder_path) && !File.directory?(@output_folder_path)
+        render :text => "Output folder path '#{@output_folder_path}' does not exist."
+        return
+      end
+      #add slash at the end of path 
+      last_char = @output_folder_path.split('').last
+      if last_char != "/"
+        @output_folder_path << "/"
+      end 
+    else
+      @output_folder_path = 'public/output/'
+    end
+    
     #read and parse source files
-    parser = XML::Parser.file('public/input/taxonomy.xml')
+    parser = XML::Parser.file(taxonomy_path)
     @doc = parser.parse
-    parser = XML::Parser.file('public/input/destinations.xml')
+    parser = XML::Parser.file(destinations_path)
     @destinations = parser.parse
     
     #speed up XPath computation on static documents
@@ -136,32 +95,14 @@ class ConversionController < ApplicationController
     
       #render output html and create new file at a specified path.
       html_text = render_to_string  
-      file = File.new("public/output/#{@atlas_node_id.value}-#{@node_name}.html","w")
+      file = File.new("#{@output_folder_path}#{@atlas_node_id.value}-#{@node_name}.html","w")
       file.write html_text
       file.close    
      end
      
     render :text => 'Conversion completed.'
-    #render 'conversion/test'
   end
-  
-  def testo
-    if !node_id = params[:id]
-      node_id = '355064'
-    end
-    parser = XML::Parser.file('public/input/taxonomy.xml')
-    @doc = parser.parse
-    parser = XML::Parser.file('public/input/destinations.xml')
-    @destinations = parser.parse
-    
-    #speed up XPath computation on static documents.
-    @doc.order_elements! 
-    @destinations.order_elements! 
-    
-    @nodes = @doc.find("//node")
-    render 'conversion/test'
-  end
-  
+ 
   def render_destination
     if !node_id = params[:id]
       node_id = '355064'
@@ -210,53 +151,4 @@ class ConversionController < ApplicationController
     file.write html_text
     file.close
   end
-  
-  def test
-   
-    file = File.open("public/input/destinations.xml", "rb")
-    contents = file.read
-    
-    render :inline => contents
-  end
-  
-  def convert_xml_to_html(destinations_url="public/input/destinations.xml",
-                          taxonomy_url="public/input/taxonomy.xml",
-                          output_folder_url="public/output/")
-
-    #check if passing parameters works
-   
-    destinations = read_file(destinations_url)
-    taxonomy = read_file(taxonomy_url)
-
-    #parse xml
-
-  
-
-    xmlfile = File.new("public/input/taxonomy.xml")
-    xmldoc = Document.new(xmlfile)
-
-string = ""
-    xmldoc.elements.each("definitions/src") do |element|
-    			string = string + "[", element.name.to_s, "]"
-    			element.each_recursive do |childElement|
-    				string = string + "[", childElement.name.to_s, "]"
-    			end
-    		end
-
-
-
-
-    render :text => string    
-    
-    #write file
-    #File.open("test.txt","w") {|f| f.write('MyString') }
-  end
-  
-  private
-  def read_file(url)
-    file = File.open(url, "rb")
-    file.read
-  end
-  
-  
 end

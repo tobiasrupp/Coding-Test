@@ -1,5 +1,7 @@
-<%= debug @nodes %>
-	<% @nodes.each do |node| %>
-		<%= node.content %>
-		</br>
-	<% end %>	
+<%= debug @output_folder_path %>
+<% if flash[:error] %>
+       <p class="error"><%= flash[:error] %></p>
+   <% end %>
+   <% if flash[:notice] %>
+       <p class="notice"><%= flash[:notice] %></p>
+   <% end %>
