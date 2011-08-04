@@ -1,5 +1,7 @@
 lonelyplanet/config/database.yml
 lonelyplanet/tmp/*
 lonelyplanet/log/*
+lonelyplanet/public/input/destinations.xml
+lonelyplanet/public/input/taxonomy.xml
 lonelyplanet/public/input/*
 lonelyplanet/public/output/*
