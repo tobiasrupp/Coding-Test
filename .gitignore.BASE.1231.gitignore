@@ -1,0 +1,3 @@
+lonelyplanet/config/database.yml
+lonelyplanet/tmp/*
+lonelyplanet/log/*

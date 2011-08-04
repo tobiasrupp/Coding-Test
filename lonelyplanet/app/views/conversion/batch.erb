@@ -1,0 +1,58 @@
+<div id="header">
+   <div id="logo"></div>
+   <h1>Lonely Planet: <%= @node_name %></h1>
+</div>    
+ <div id="wrapper">
+ <div id="sidebar">
+   <div class="block">
+     <h3>Navigation</h3>
+     <div class="content">
+       <div class="inner">
+		 <!-- create link to parent destination if existing -->
+         <% if @parent_node.name == 'node' %>
+			<b>Go to: </b>
+			<b><a href="<%=@parent_atlas_node_id.value%>-<%=@parent_node_name%>.html"><%= @parent_node_name %></a></b>
+		<% end %>
+			<!-- create link list of related destinations -->	
+			<% first_time = true %>
+			<% @node.each_child do |element| %>
+				<% if element.name == 'node' %>				
+					<% element.each_child do |element2| %>
+						<% if element2.name == 'node_name' %>
+							<% if first_time == true %>
+								<b>Destinations in <%= @node_name %>: </b></br></br>
+								<% first_time = false %>
+							<% end %>
+							<% attributes2 = element.attributes %>
+							<% atlas_node_id2 = attributes2.get_attribute('atlas_node_id') %>
+					    	<% if atlas_node_id2 == nil %>
+					      		<% atlas_node_id2 = attributes2.get_attribute('geo_id') %>    
+					    	<% end %>
+							<b><a href="<%=atlas_node_id2.value%>-<%=element2.content%>.html"><%= element2.content %></a></b>
+						<% end %>
+					<% end %>
+				<% end %>
+				</br>
+			<% end %>
+       </div>
+     </div>
+   </div>
+ </div>
+
+ <div id="main">
+   <div class="block">
+     <div class="secondary-navigation">
+       <ul>
+         <li class="first"><a href="<%=@atlas_node_id.value%>-<%=@node_name%>.html"><%= @node_name %></a></li>
+       </ul>
+       <div class="clear"></div>
+     </div>
+     <div class="content">            
+       <div class="inner">
+		  <%= @overview.content %></br></br>
+		 </div>
+        </div>
+     </div>
+   </div>
+ </div>
+ </div>
