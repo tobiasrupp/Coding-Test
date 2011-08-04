@@ -1,5 +1,5 @@
 class ConversionController < ApplicationController
-    require 'xml'
+  require 'xml'
     
   #... add some security
   
@@ -12,6 +12,7 @@ class ConversionController < ApplicationController
         return
       end
     else  
+      #default path
       destinations_path = 'public/input/destinations.xml'
     end
     if params[:taxonomy_path]
@@ -21,6 +22,7 @@ class ConversionController < ApplicationController
         return
       end
     else
+      #default path
       taxonomy_path = 'public/input/taxonomy.xml'
     end
     if params[:output_folder_path]
@@ -35,14 +37,20 @@ class ConversionController < ApplicationController
         @output_folder_path << "/"
       end 
     else
+      #default path
       @output_folder_path = 'public/output/'
     end
     
     #read and parse source files
-    parser = XML::Parser.file(taxonomy_path)
-    @doc = parser.parse
-    parser = XML::Parser.file(destinations_path)
-    @destinations = parser.parse
+    begin
+      parser = XML::Parser.file(taxonomy_path)
+      @doc = parser.parse
+      parser = XML::Parser.file(destinations_path)
+      @destinations = parser.parse
+    rescue => exc
+      render :text => "Error parsing source file ('#{exc.message}')."
+      return
+    end
     
     #speed up XPath computation on static documents
     @doc.order_elements! 
@@ -50,6 +58,8 @@ class ConversionController < ApplicationController
     
     #get all destination elements
     @all_nodes = @doc.find("//node")
+    first_time = true
+    file_count = 0
     @all_nodes.each do |node| 
       @node = node
       
@@ -95,60 +105,32 @@ class ConversionController < ApplicationController
     
       #render output html and create new file at a specified path.
       html_text = render_to_string  
-      file = File.new("#{@output_folder_path}#{@atlas_node_id.value}-#{@node_name}.html","w")
+      file_name = "#{@output_folder_path}#{@atlas_node_id.value}-#{@node_name}.html"
+      file = File.new(file_name,"w")
       file.write html_text
       file.close    
-     end
-     
+      
+      #write log entry
+      if first_time == true
+        @logger = Logger.new("#{@output_folder_path}_batch.log", shift_age = 'daily')
+        @logger.info("#{get_time_stamp} - Batch job started")
+        file_count += 1
+        @logger.info("#{get_time_stamp} - Created #{file_name}")
+        first_time = false
+      else
+        file_count += 1
+        @logger.info("#{get_time_stamp} - Created #{file_name}")
+      end
+    end
+    @logger.info("#{get_time_stamp} - Batch completed. #{file_count} files created")
+    @logger.info("")
     render :text => 'Conversion completed.'
   end
- 
-  def render_destination
-    if !node_id = params[:id]
-      node_id = '355064'
-    end
-    parser = XML::Parser.file('public/input/taxonomy.xml')
-    @doc = parser.parse
-    parser = XML::Parser.file('public/input/destinations.xml')
-    @destinations = parser.parse
-    
-    #speed up XPath computation on static documents.
-    @doc.order_elements! 
-    @destinations.order_elements! 
-    
-    @node = @doc.find_first("//node[@atlas_node_id=#{node_id}]")
-    @attributes = @node.attributes
-    @atlas_node_id = @attributes.get_attribute('atlas_node_id')
-    if @atlas_node_id == nil
-      @atlas_node_id = @attributes.get_attribute('geo_id')    
-    end
-    
-    #get destination text
-    @node.each_child do |element|
-    	if element.name == 'node_name'  	
-    		@node_name = element.content
-    	elsif element.name == 'node'
-    	  @has_related_destinations = true 
-    	end
-    end
-    if !@node_name 
-      @node_name = "Text not found"
-    end
-    
-    @overview = @destinations.find_first("//destination[@atlas_id=#{node_id}]/introductory/introduction/overview")
-    
-    @parent_node = @node.parent
-    parent_node_attributes = @parent_node.attributes
-    @parent_atlas_node_id = parent_node_attributes.get_attribute('atlas_node_id')
-    if @parent_atlas_node_id == nil
-      @parent_atlas_node_id = parent_node_attributes.get_attribute('geo_id')    
-    end
-    
-    html_text = render_to_string
-    
-    # Create new file at a specified path.
-    file = File.new("public/output/#{node_id}-#{@node_name}.html","w")
-    file.write html_text
-    file.close
+
+private
+  
+  def get_time_stamp
+    time = Time.now
+    time.to_datetime.strftime("%a, %d %b %Y, %T").squeeze(' ')
   end
 end

@@ -11,7 +11,7 @@
 		 <!-- create link to parent destination if existing -->
          <% if @parent_node.name == 'node' %>
 			<b>Go to: </b>
-			<b><a href="http://localhost:3000/output/<%=@parent_atlas_node_id.value%>-<%=@parent_node_name%>"><%= @parent_node_name %></a></b>
+			<b><a href="<%=@parent_atlas_node_id.value%>-<%=@parent_node_name%>.html"><%= @parent_node_name %></a></b>
 		<% end %>
 			<!-- create link list of related destinations -->	
 			<% first_time = true %>
@@ -28,7 +28,7 @@
 					    	<% if atlas_node_id2 == nil %>
 					      		<% atlas_node_id2 = attributes2.get_attribute('geo_id') %>    
 					    	<% end %>
-							<b><a href="http://localhost:3000/output/<%=atlas_node_id2.value%>-<%=element2.content%>"><%= element2.content %></a></b>
+							<b><a href="<%=atlas_node_id2.value%>-<%=element2.content%>.html"><%= element2.content %></a></b>
 						<% end %>
 					<% end %>
 				<% end %>
@@ -43,13 +43,13 @@
    <div class="block">
      <div class="secondary-navigation">
        <ul>
-         <li class="first"><a href="http://localhost:3000/output/<%=@atlas_node_id.value%>-<%=@node_name%>"><%= @node_name %></a></li>
+         <li class="first"><a href="<%=@atlas_node_id.value%>-<%=@node_name%>.html"><%= @node_name %></a></li>
        </ul>
        <div class="clear"></div>
      </div>
      <div class="content">            
        <div class="inner">
-		  <p><%= @overview.content %></p>
+		  <%= @overview.content %></br></br>
 		 </div>
         </div>
      </div>
